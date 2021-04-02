@@ -1,0 +1,127 @@
+* Academic use of containers
+This is done by using the bin and lib files. In practice docker would simplify this process significantly.
+
+** chroot
+**** connect to a docker environment
+~docker run -it --name docker-host --rm --privileged ubuntu:bionic~
+
+**** display the current distro 
+~cat /etc/issue~
+
+**** recreating the bash terminal
+#+begin_src 
+mkdir my-new-root
+mkdir my-new-root/bin
+cp bin/bash my-new-root/bin/
+ldd bin/bash
+mkdir my-new-root/lib{,64}
+#+end_src
+
+**** copy all libraries needed for VM to reckognize (from ldd)
+~cp /lib/x86_64-linux-gnu/libtinfo.so.5 /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libc.so.6 my-new-root/lib~
+
+**** same for lib64
+~cp /lib64/ld-linux-x86-64.so.2 my-new-root/lib64/~
+
+**** lets add the lib for ls command
+#+begin_src 
+cp /bin/ls my-new-root/bin/
+ldd /bin/ls
+cp /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/libpcre.so.3 my-new-root/lib
+#+end_src
+
+**** changing the root to new root with bash
+~chroot my-new-root/ bash~
+
+** example cat secret recipe
+~echo "my secret soda recipe" >> my-new-root/secret.txt~
+
+**** add cat command to the lib
+#+begin_src 
+cp bin/cat my-new-root/bin
+ldd bin/cat
+#+end_src
+
+**** we can see that all libs are in place
+~ls my-new-root/lib~
+~ls my-new-root/lib64~
+
+***** we can see linux-vdso.so.1 is not in our new root library but if it doesn't give you a full path, we can ignore it.
+
+**** so we can change root and use cat
+~chroot my-new-root/ bash~
+
+
+** namespaces
+This covers multiple chroot-ed environments next to each other, which by default can see each other's processes.
+
+**** make a new terminal tab and create a docker-host
+~docker exec -it docker-host bash~
+
+**** in our (original) child environment lets install some packages
+#+begin_src 
+apt-get update -y
+apt-get install debootstrap -y
+debootstrap --variant=minbase bionic /better-root
+#+end_src
+
+**** and unshare the critical libs
+#+begin_src 
+unshare --mount --uts --ipc --net --pid --fork --user --map-root-user chroot /better-root bash # this also chroot's for us
+mount -t proc none /proc # process namespace
+mount -t sysfs none /sys # filesystem
+mount -t tmpfs none /tmp # filesystem
+#+end_src
+
+**** now if we run tail commands on either environments we can see that the child environemnt has critical processes hidden
+#+begin_src 
+tail -f /my-new-root/secret.txt
+ps aux
+#+end_src
+
+**** but the parent environemnt can do anything from before
+#+begin_src 
+ps aux
+kill <pid for tail>
+#+end_src
+
+
+** cgroups (control groups)
+This is the practice of giving sperate groups their own environment (google maps team vs. google docs team). Also limits cpu process resources within groups.
+
+**** outside of unshared environment get the tools we need
+~apt-get install -y cgroup-tools htop~
+
+**** create new cgroups
+#+begin_src 
+ps aux
+cgclassify -g cpu,memory,blkio,devices,freezer:sandbox <PID>
+#+end_src
+
+**** list tasks of the group
+~cat /sys/fs/cgroup/cpu/sandbox/tasks~
+
+**** show cpu share of the groups
+~cat /sys/fs/cgroup/cpu/sandbox/cpu.shares~
+
+**** to kill all tasks we would use:
+~kill -9 $(cat /sys/fs/cgroup/cpu/sandbox/tasks)~
+
+**** limit usage to 5% for a multi-core system
+~cgset -r cpu.cfs_period_us=100000 -r cpu.cfs_quota_us=$[ 5000 * $(getconf _NPROCESSORS_ONLN) ] sandbox~
+
+**** Set a limit of 80M
+~cgset -r memory.limit_in_bytes=80M sandbox~
+
+**** Get memory stats used by the cgroup
+~cgget -r memory.stat sandbox~
+
+**** htop on the parent environemnt
+~htop before testing usage~
+
+**** on child environment spike the cpu
+~yes > /dev/null~
+
+**** on child environment spike the memory of ram
+~yes | tr \\n x | head -c 1048576000 | grep n~
+
