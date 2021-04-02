@@ -33,7 +33,7 @@ cp /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libpthread.so.0 /
 **** changing the root to new root with bash
 ~chroot my-new-root/ bash~
 
-** example cat secret recipe
+*** example cat secret recipe
 ~echo "my secret soda recipe" >> my-new-root/secret.txt~
 
 **** add cat command to the lib
