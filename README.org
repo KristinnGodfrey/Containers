@@ -1,5 +1,5 @@
-| # | Project name         | Files | Screenshots |
-|---+----------------------+-------+-------------|
-| 1 | [[./low-level-containers/][low-level-containers]] | [[./low-level-containers/chroot/setup.sh][1]] [[./low-level-containers/namespaces/setup.sh][2]] [[./low-level-containers/cgroups/setup.sh][3]] | [[./img/htop.png][1]]           |
-| 2 | [[./docker][docker]]               |       |             |
+| # | Project name         | Files   | Screenshots |
+|---+----------------------+---------+-------------|
+| 1 | [[./low-level-containers/][low-level-containers]] | [[./low-level-containers/chroot/setup.sh][1]], [[./low-level-containers/namespaces/setup.sh][2]], [[./low-level-containers/cgroups/setup.sh][3]] | [[./img/htop.png][1]]           |
+| 2 | [[./docker][docker]]               |         |             |
 
