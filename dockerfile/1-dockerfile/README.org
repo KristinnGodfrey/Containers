@@ -1,0 +1,41 @@
+* The most basic Dockerfile-based Container
+*** Dockerfile instructions
+**** FROM
+~FROM node:12-stretch~
+Start with the node container. That container itself comes from another Dockerfile which build its own container, which itself comes from another Dockerfile, which comes ultimately from the Debian image.
+**** CMD
+~CMD ["node", "-e", "console.log(\"hi lol\")"]~
+There will only ever be one of these in effect in a Dockerfile. If there are multiple, it will only read the last one, we could aswell overwrite the ~CMD~ with by passing a tag.
+
+*** Instructions on running
+**** build our container from the same directory as the dockerfile
+~docker build . --tag my-node-app~~
+We see: hash of an image because each one of those layers is in-and-of themselves a valid container image! This ends up being important later.
+
+**** run our built container
+~docker run my-node-app:1~
+
+**** we can now change the CMD within (or overwrite) and get an entry for "2"
+~node -e "console.log('bye')"~
+
+**** repeat steps 1-2 and change the selector
+#+begin_src 
+docker build -t my-node-app:2 .
+docker run my-node-app:2
+#+end_src
+
+**** our old command is still alive
+~docker run my-node-app:1~
+
+* EXPOSE
+*** Dockerfile instructions
+**** EXPOSE
+~EXPOSE <PORT NUMBER>~
+
+**** instructions on running
+~docker run --init -rm --detach -P my-node-app~
+The ~-P~ exposes all ports that are exposed and sets them to a port
+
+*** notes
+We would probably not use this as we would be assigned to a random port, but its nice to know.
+

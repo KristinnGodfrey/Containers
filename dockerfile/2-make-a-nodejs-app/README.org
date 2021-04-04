@@ -1,0 +1,32 @@
+* Build a Node.js App
+*** Dockerfile instructions
+**** FROM
+~FROM node:12-stretch~
+
+**** USER
+~USER node~
+USER instruction let's us switch from being the root user to a different user, one called "node"
+
+**** WORKDIR
+~WORKDIR /home/node/code~
+WORKDIR works as if you had cd'd into that directory, so now all paths are relative to that. And again, if it doesn't exist, it will create it for you.
+
+**** COPY
+~COPY index.js index.js~
+First thing is we have to copy this file from your local file system into the container.
+
+~COPY index.js /home/node/code/index.js~
+
+**** CMD
+~CMD ["node", "index.js"]~
+
+~CMD ["node", "/home/node/code/index.js"]~
+
+*** Instructions on running
+**** build and run
+#+begin_src 
+docker build -t my-node-app .
+docker run --init --publish 3000:3000 my-node-app
+#+end_src
+
+we could also use ~--p~ for publish

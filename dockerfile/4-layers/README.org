@@ -1,0 +1,31 @@
+* Layers
+*** Description
+Here we can see that the order of operations matters, in respect to cache hits on layers.
+
+*** Dockerfile instructions
+We seperated ~COPY package-lock.json~ from the other ~Copy~, this was if ~package-lock.json~ hasn't changed we can use the cache hit.
+
+**** FROM
+~FROM node:12-stretch~
+
+**** USER
+~USER node~
+
+**** RUN
+~RUN mkdir /home/node/code~
+
+**** WORKDIR
+~WORKDIR /home/node/code~
+
+**** COPY
+~COPY --chown=node:node package-lock.json package.json ./~
+
+**** RUN
+~RUN npm ci~
+
+**** COPY
+~COPY --chown=node:node . .~
+
+**** CMD
+~CMD ["node", "index.js"]~
+

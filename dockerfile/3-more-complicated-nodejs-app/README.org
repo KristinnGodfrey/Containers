@@ -1,0 +1,44 @@
+* A More Complicated Node.js App
+*** Setup instructions
+**** Dependencies
+We are using hapi pino so lets install that
+#+begin_src 
+npm init -y # this will create a package.json for you without asking any questions
+npm install @hapi/hapi hapi-pino
+#+end_src
+
+**** .dockerignore
+node_modules/
+.git/
+
+***** description
+works the same as .gitignore, we always want to ignore .git at least
+
+*** Dockerfile instructions
+**** FROM
+~FROM node:12-stretch~
+
+**** USER
+~USER node~
+
+**** RUN
+~RUN mkdir /home/node/code~
+create the dir as user so it's permnissions are not for root.
+
+**** WORKDIR
+~WORKDIR /home/node/code~
+set workdir
+
+**** COPY
+~COPY --chown=node:node . .~
+copy everything in the directory.
+
+**** RUN
+~RUN npm ci~
+run package.json
+
+**** CMD
+~CMD ["node", "index.js"]~
+
+*** notes
+make sure you don't bind your app to host localhost (like if you put localhost instead of 0.0.0.0 in the host in our hapi app.) This will make it so the app is only available inside the container. If you see connection reset instead of when you're expecting a response, this a good candidate for what's happening.
