@@ -1,0 +1,166 @@
+* Docker
+
+Containers are ephemeral, example: running databases inside a container would destroy them.
+
+** Getting set up with Docker
+
+- Dockerhub has a collection of over 1000 containers, so before we might think about creating our own container, we might think of seeing if our requirements might be easily fulfilled by pulling an existing container.
+
+**** List out all running containers
+~docker ps~
+
+**** pull from docker hub mongo container
+~docker pull mongo:3~
+
+** Docker images without Docker
+Image is an pre-made container. It's basicly a zip file that we could do recreate.
+
+**** use this to start the docker contanier with docker running in it connected to host docker daemon
+~docker run -ti -v /var/run/docker.sock:/var/run/docker.sock --privileged --rm --name docker-host docker:18.06.1-ce~
+
+**** check our current linux version
+~cat etc/issue~
+
+**** run stock alpine container
+~docker run --rm -dit --name my-alpine alpine:3.10 sh~
+
+**** now we want to dump the state out of this alpine container and run it as my own container, which is exactly what an image is.
+~docker export -o dockercontainer.tar my-alpine~
+
+**** now we can ~ls~ and see we have this ~dockercontainer~
+~ls~
+
+**** we will now make a dir that resembles file systems for linux, which it is.
+#+begin_src 
+mkdir container-root
+tar xf dockercontainer.tar -C container-root/
+cd container-root/
+ls
+#+end_src
+
+**** now unmount
+~unshare --mount --uts --ipc --net --pid --fork --user --map-root-user chroot /container-root ash~
+
+**** now we are unshared
+~pwd~
+
+**** mount
+#+begin_src 
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t tmpfs none /tmp
+ps aux
+#+end_src
+
+** Docker images with docker
+**** this command does what everything from above did, magically.
+~docker run --interactive --tty alpine:3.10~
+
+**** the last flags are commands to be run before the command finishes.
+~docker run -it alpine:3.10 ls~
+we see that it ran ~ls~
+
+**** Docker image can take alot of storage in your computer, we can run:
+#+begin_comment
+> WARNING! This will remove all dangling images.
+> Are you sure you want to continue? [y/N] n
+#+end_comment
+
+**** detach, runs in the background
+#+begin_src 
+docker run -it --detach ubuntu:bionic
+docker ps
+#+end_src
+we see the detach also gives us a hash.
+
+**** we can attach ourselves to the docker image displayed in ~docker ps~ NAME field
+~docker attach <NAME>~
+
+**** we can kill images running the background
+~docker kill <CONTAINER ID>~ or
+~docker kill <NAME>~
+
+**** we can run an image with a specified name
+~docker run -it --name my-kiddi-alpine alpine:3.10~
+
+**** we can check logs of an image, specified by NAME
+~docker logs my-kiddi-alpine~
+~docker rm my-kiddi-alpine~
+
+**** now we can see that a PRO-TIP would be to create an image with a specified name and put a --rm flag to destroy it, as it would be destroyed anyways but would keep logs
+~docker run -it --name my-kiddi-alpine --rm alpine:3.10~
+
+** node.js on Docker
+
+**** start a node repl (because we dont give in any arguments (flags)) inside of a debian stretch linix
+~docker run -it node:12-stretch~
+
+**** start bash with the node container.
+~docker run -it node:12-stretch bash~
+
+** Tags
+
+**** Supported tags and respective Dockerfile links
+[[https://hub.docker.com/_/node][docker hub for the node container]]
+We can see that each bulletpoint in the list depicted by the link above has many syonyms.
+
+**** let patches move forward with security patches
+use ~node:12.13~ instead of ~node:12.13.1~
+
+** Docker CLI
+
+**** pull / push
+~docker run -it --rm jess/hollywood~
+
+**** inspect
+~docker inspect node~
+Dump out a lot of info about the container.
+
+**** pause / unpause
+#+begin_src 
+docker run -dit jturpin/hollywood hollywood
+docker ps # see container running
+docker pause <ID or name>
+docker ps # see container paused
+docker unpause <ID or name>
+docker ps # see container running again
+docker kill <ID or name> # see container is gone
+#+end_src
+
+**** exec
+execute a command against a running container on an existing container.
+#+begin_src 
+docker run -dit jturpin/hollywood hollywood
+docker ps # grab the name or ID
+docker exec <ID or name> ps aux # see it output all the running processes of the container
+#+end_src
+
+**** import / export
+Allows you to dump out your container to a tar ball (which we did above.) You can also import a tar ball as well.
+
+**** top
+#+begin_src 
+docker run mongo
+docker top <ID outputted by previous command> # you should see MongoDB running
+#+end_src
+
+**** rm / rmi
+***** remove
+list all containers: ~ps aux --all~
+~docker rm <id or name>~
+***** remove image
+list all images: ~docker images~
+~docker rmi mongo~
+
+**** logs
+#+begin_src 
+docker run -d mongo
+docker logs <id from previous command> # see all the logs
+#+end_src
+
+**** restart
+Pretty self explanatory. Will restart a running container
+
+**** search
+docker search python # see all the various flavors of Python containers you can run
+docker search node # see all the various flavors of Node.js containers you can run
