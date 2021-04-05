@@ -1,7 +1,7 @@
 | # | Project name           | Files       | Screenshots |
 |---+------------------------+-------------+-------------|
-| 1 | [[./low-level-containers/][low-level-containers]]   | [[./low-level-containers/chroot/setup.sh][1]], [[./low-level-containers/namespaces/setup.sh][2]], [[./low-level-containers/cgroups/setup.sh][3]]     | [[./img/htop.png][1]]           |
+| 1 | [[./low-level-containers/][low-level-containers]]   | [[./low-level-containers/chroot/][1]], [[./low-level-containers/namespaces/][2]], [[./low-level-containers/cgroups/][3]]     | [[./img/htop.png][1]]           |
 | 2 | [[./docker][docker]]                 |             |             |
 | 3 | [[./dockerfile][dockerfile]]             | [[./dockerfile/1-dockerfile/][1]], [[./dockerfile/2-make-a-nodejs-app/][2]], [[./dockerfile/3-more-complicated-nodejs-app/][3]], [[./dockerfile/4-layers/][4]]  |             |
-| 4 | [[./making-tiny-containers/][making-tiny-containers]] | [[./making-tiny-containers/alpine-linux/][1]], [[./making-tiny-containers/making-our-own-alpine-nodejs-container/][2]],[[./making-tiny-containers/multi-stage-builds/][ 3]], [[./making-tiny-containers/static-assets-project/][4]], |             |
+| 4 | [[./making-tiny-containers/][making-tiny-containers]] | [[./making-tiny-containers/alpine-linux/][1]], [[./making-tiny-containers/making-our-own-alpine-nodejs-container/][2]],[[./making-tiny-containers/multi-stage-builds/][ 3]], [[./making-tiny-containers/static-assets-project/][4]]  |             |
 
