@@ -1,0 +1,31 @@
+* Alpine Containers
+
+*** Alpine
+Alpine linux is a distro of linux that is very bare-bones, we got the core, but would need to add any other bin files. Migrating from node-lates to alpine We go from about 900mb to 5mb
+
+*** Debian stretch slim
+A possibility to use about 150mb is to use f.x. ~node:12-stretch-slim~ with full debian
+
+*** Security in small projects
+Before we send our product out to production, it would be good to get it running in alpine, cause smaller file size means its more maintainable and secure.
+
+** Dockerfile instructions
+#+begin_src 
+FROM node:12-alpine
+
+USER node
+
+RUN mkdir /home/node/code
+
+WORKDIR /home/node/code
+
+COPY --chown=node:node package-lock.json package.json ./
+
+RUN npm ci
+
+COPY --chown=node:node . .
+
+CMD ["node", "index.js"]
+#+end_src
+
+To see size we run: ~node inspect my-node-app | jq~

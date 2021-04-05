@@ -1,0 +1,36 @@
+* Multi stage builds
+Here we use one container to build your app and another to run it.
+
+Make a new dockerfile: ~multi-node.Dockerfile~
+
+*** Dockerfile instructions
+#+begin_src 
+# build stage
+FROM node:12-stretch
+WORKDIR /build
+COPY package-lock.json package.json ./
+RUN npm ci
+COPY . .
+
+# runtime stage
+FROM alpine:3.10
+RUN apk add --update nodejs
+RUN addgroup -S node && adduser -S node -G node
+USER node
+RUN mkdir /home/node/code
+WORKDIR /home/node/code
+COPY --from=0 --chown=node:node /build .
+CMD ["node", "index.js"]
+#+end_src
+
+Notice we have two ~FROM~ instructions. This is how you can tell it's multistage.
+
+The two real key differences are that we don't ~apk add npm~ and we're doing ~COPY --from=0~ which means we're copying from the first stage. As you may imagine, this means you can copy from any previous stage or if you leave --from off it'll come from the host machine.
+
+The ~COPY . .~ copies the entire project, recursively into the container for the build.
+
+*** Instructions on running the container.
+#+begin_src 
+docker build -t multi-node -f multi-node.Dockerfile .
+docker run -p 3000:3000 multi-node
+#+end_src
