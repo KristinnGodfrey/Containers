@@ -1,0 +1,39 @@
+* cgroups (control groups)
+This is the practice of giving sperate groups their own environment (google maps team vs. google docs team). Also limits cpu process resources within groups.
+
+**** outside of unshared environment get the tools we need
+~apt-get install -y cgroup-tools htop~
+
+**** create new cgroups
+#+begin_src 
+ps aux
+cgclassify -g cpu,memory,blkio,devices,freezer:sandbox <PID>
+#+end_src
+
+**** list tasks of the group
+~cat /sys/fs/cgroup/cpu/sandbox/tasks~
+
+**** show cpu share of the groups
+~cat /sys/fs/cgroup/cpu/sandbox/cpu.shares~
+
+**** to kill all tasks we would use:
+~kill -9 $(cat /sys/fs/cgroup/cpu/sandbox/tasks)~
+
+**** limit usage to 5% for a multi-core system
+~cgset -r cpu.cfs_period_us=100000 -r cpu.cfs_quota_us=$[ 5000 * $(getconf _NPROCESSORS_ONLN) ] sandbox~
+
+**** Set a limit of 80M
+~cgset -r memory.limit_in_bytes=80M sandbox~
+
+**** Get memory stats used by the cgroup
+~cgget -r memory.stat sandbox~
+
+**** htop on the parent environemnt
+~htop before testing usage~
+
+**** on child environment spike the cpu
+~yes > /dev/null~
+
+**** on child environment spike the memory of ram
+~yes | tr \\n x | head -c 1048576000 | grep n~
+

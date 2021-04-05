@@ -1,0 +1,50 @@
+* chroot
+**** connect to a docker environment
+~docker run -it --name docker-host --rm --privileged ubuntu:bionic~
+
+**** display the current distro 
+~cat /etc/issue~
+
+**** recreating the bash terminal
+#+begin_src 
+mkdir my-new-root
+mkdir my-new-root/bin
+cp bin/bash my-new-root/bin/
+ldd bin/bash
+mkdir my-new-root/lib{,64}
+#+end_src
+
+**** copy all libraries needed for VM to reckognize (from ldd)
+~cp /lib/x86_64-linux-gnu/libtinfo.so.5 /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libc.so.6 my-new-root/lib~
+
+**** same for lib64
+~cp /lib64/ld-linux-x86-64.so.2 my-new-root/lib64/~
+
+**** lets add the lib for ls command
+#+begin_src 
+cp /bin/ls my-new-root/bin/
+ldd /bin/ls
+cp /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/libpcre.so.3 my-new-root/lib
+#+end_src
+
+**** changing the root to new root with bash
+~chroot my-new-root/ bash~
+
+*** example cat secret recipe
+~echo "my secret soda recipe" >> my-new-root/secret.txt~
+
+**** add cat command to the lib
+#+begin_src 
+cp bin/cat my-new-root/bin
+ldd bin/cat
+#+end_src
+
+**** we can see that all libs are in place
+~ls my-new-root/lib~
+~ls my-new-root/lib64~
+
+***** we can see linux-vdso.so.1 is not in our new root library but if it doesn't give you a full path, we can ignore it.
+
+**** so we can change root and use cat
+~chroot my-new-root/ bash~
+
